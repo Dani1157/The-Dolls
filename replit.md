@@ -94,3 +94,23 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+
+### `artifacts/the-dolls` (`@workspace/the-dolls`)
+
+React + Vite LGBTQ+-friendly fashion e-commerce website ("The Dolls"). Serves at `/` (root).
+
+- Pages: `/` (home/hero), `/shop` (product grid with filters), `/product/:id` (product detail), `/cart`, `/wishlist`, `/orders`, `/live` (live events with real-time chat feed)
+- Design: dark editorial theme, fiery orange-red palette, Cinzel + Outfit fonts
+- Features: hero image from `attached_assets/hero_1774971624828.jpg`, product catalog, shopping cart, wishlist, orders, live streaming events with polled chat feed (3s interval)
+- Fonts loaded via `index.html` link tag (not CSS import, due to Tailwind v4 PostCSS constraint)
+- Seed data: `pnpm --filter @workspace/scripts run seed`
+
+## DB Tables
+
+- `products` — fashion products (name, price, category, sizes, colors, tags, flags: isFeatured/isNew/isSale/lgbtqFriendly)
+- `categories` — product categories with imageUrl
+- `cart_items` — session-based cart (sessionId, productId, quantity, size, color)
+- `wishlist` — session-based wishlist (sessionId, productId), unique constraint
+- `orders` — order history (sessionId, status, items JSON, total, shippingAddress)
+- `live_events` — live sale events (isLive, viewerCount, hostName, featuredProducts)
+- `live_feed` — chat/activity messages for live events (type: chat|purchase|join|heart)

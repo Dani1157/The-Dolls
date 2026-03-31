@@ -1,22 +1,30 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: The Dolls - LGBTQ+ Friendly Fashion E-Commerce API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: products
+    description: Product catalog
+  - name: cart
+    description: Shopping cart
+  - name: wishlist
+    description: Wishlist
+  - name: orders
+    description: Orders
+  - name: live
+    description: Live events and sales
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +32,312 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /products:
+    get:
+      operationId: getProducts
+      tags: [products]
+      summary: Get all products
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, price_asc, price_desc, popular]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /products/featured:
+    get:
+      operationId: getFeaturedProducts
+      tags: [products]
+      summary: Get featured/trending products
+      responses:
+        "200":
+          description: Featured products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /products/categories:
+    get:
+      operationId: getCategories
+      tags: [products]
+      summary: Get all product categories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get single product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /cart:
+    get:
+      operationId: getCart
+      tags: [cart]
+      summary: Get cart items
+      responses:
+        "200":
+          description: Cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+    post:
+      operationId: addToCart
+      tags: [cart]
+      summary: Add item to cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddToCartInput"
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+
+  /cart/{itemId}:
+    put:
+      operationId: updateCartItem
+      tags: [cart]
+      summary: Update cart item quantity
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCartItemInput"
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+    delete:
+      operationId: removeCartItem
+      tags: [cart]
+      summary: Remove item from cart
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+
+  /wishlist:
+    get:
+      operationId: getWishlist
+      tags: [wishlist]
+      summary: Get wishlist
+      responses:
+        "200":
+          description: Wishlist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: addToWishlist
+      tags: [wishlist]
+      summary: Add product to wishlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WishlistInput"
+      responses:
+        "200":
+          description: Wishlist updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /wishlist/{productId}:
+    delete:
+      operationId: removeFromWishlist
+      tags: [wishlist]
+      summary: Remove product from wishlist
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Removed from wishlist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /orders:
+    get:
+      operationId: getOrders
+      tags: [orders]
+      summary: Get order history
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Place an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderInput"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /live/events:
+    get:
+      operationId: getLiveEvents
+      tags: [live]
+      summary: Get upcoming live sale events
+      responses:
+        "200":
+          description: Live events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LiveEvent"
+
+  /live/current:
+    get:
+      operationId: getCurrentLiveEvent
+      tags: [live]
+      summary: Get currently active live event (if any)
+      responses:
+        "200":
+          description: Current live event or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LiveEventDetail"
+
+  /live/feed:
+    get:
+      operationId: getLiveFeed
+      tags: [live]
+      summary: Get live chat/activity feed
+      responses:
+        "200":
+          description: Live feed messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeedMessage"
+
+  /shop/summary:
+    get:
+      operationId: getShopSummary
+      tags: [products]
+      summary: Get shop stats and highlights (wow endpoint)
+      responses:
+        "200":
+          description: Shop summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShopSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +345,285 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        originalPrice:
+          type: number
+          nullable: true
+        imageUrl:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        sizes:
+          type: array
+          items:
+            type: string
+        colors:
+          type: array
+          items:
+            type: string
+        inStock:
+          type: boolean
+        stockCount:
+          type: integer
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        isFeatured:
+          type: boolean
+        isNew:
+          type: boolean
+        isSale:
+          type: boolean
+        lgbtqFriendly:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - description
+        - price
+        - imageUrl
+        - images
+        - category
+        - tags
+        - sizes
+        - colors
+        - inStock
+        - stockCount
+        - rating
+        - reviewCount
+        - isFeatured
+        - isNew
+        - isSale
+        - lgbtqFriendly
+        - createdAt
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        imageUrl:
+          type: string
+        productCount:
+          type: integer
+      required: [id, name, slug, imageUrl, productCount]
+
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        productId:
+          type: integer
+        product:
+          $ref: "#/components/schemas/Product"
+        quantity:
+          type: integer
+        size:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+      required: [id, productId, product, quantity]
+
+    Cart:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        subtotal:
+          type: number
+        total:
+          type: number
+        itemCount:
+          type: integer
+      required: [items, subtotal, total, itemCount]
+
+    AddToCartInput:
+      type: object
+      properties:
+        productId:
+          type: integer
+        quantity:
+          type: integer
+        size:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+      required: [productId, quantity]
+
+    UpdateCartItemInput:
+      type: object
+      properties:
+        quantity:
+          type: integer
+      required: [quantity]
+
+    WishlistInput:
+      type: object
+      properties:
+        productId:
+          type: integer
+      required: [productId]
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [pending, processing, shipped, delivered, cancelled]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        total:
+          type: number
+        shippingAddress:
+          type: string
+        createdAt:
+          type: string
+      required: [id, status, items, total, shippingAddress, createdAt]
+
+    CreateOrderInput:
+      type: object
+      properties:
+        shippingAddress:
+          type: string
+        email:
+          type: string
+      required: [shippingAddress, email]
+
+    LiveEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        startsAt:
+          type: string
+        endsAt:
+          type: string
+        isLive:
+          type: boolean
+        viewerCount:
+          type: integer
+        thumbnailUrl:
+          type: string
+        hostName:
+          type: string
+        featuredProducts:
+          type: array
+          items:
+            type: integer
+      required:
+        - id
+        - title
+        - description
+        - startsAt
+        - endsAt
+        - isLive
+        - viewerCount
+        - thumbnailUrl
+        - hostName
+        - featuredProducts
+
+    LiveEventDetail:
+      type: object
+      properties:
+        event:
+          $ref: "#/components/schemas/LiveEvent"
+          nullable: true
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        feed:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedMessage"
+      required: [products, feed]
+
+    FeedMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [chat, purchase, join, heart]
+        createdAt:
+          type: string
+      required: [id, username, message, type, createdAt]
+
+    ShopSummary:
+      type: object
+      properties:
+        totalProducts:
+          type: integer
+        newArrivals:
+          type: integer
+        onSale:
+          type: integer
+        categories:
+          type: integer
+        featuredProducts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        newArrivalsProducts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        saleProducts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+      required:
+        - totalProducts
+        - newArrivals
+        - onSale
+        - categories
+        - featuredProducts
+        - newArrivalsProducts
+        - saleProducts
