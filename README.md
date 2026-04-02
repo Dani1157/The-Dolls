@@ -4,6 +4,7 @@ A fully responsive, luxury-inspired **website design** for a beauty brand focuse
 
 ## ✨ Overview
 
+[![Live Demo](https://img.shields.io/badge/LIVE%20DEMO-LUXE%20Fashion-d87c4a?style=for-the-badge&logo=githubpages&logoColor=white)](https://dani1157.github.io/The-Dolls/)
 **The Dolls** is a modern, visually rich **website design concept** created for:
 
 * Trans women
