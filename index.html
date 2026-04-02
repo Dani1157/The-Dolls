@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Dolls — Luxury Makeup for Everyone</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --crimson: #8B1A1A;
+    --deep-red: #C0392B;
+    --flame: #D4511A;
+    --amber: #C47A2B;
+    --ochre: #B5860D;
+    --coal: #1A0E0E;
+    --ink: #0F0808;
+    --warm-black: #1C1010;
+    --smoke: #2A1A1A;
+    --blush: #F2D4C8;
+    --cream: #FAF0E8;
+    --gold: #D4A853;
+    --gold-light: #E8C97A;
+    --text-main: #FAF0E8;
+    --text-muted: #C4A898;
+    --text-dark: #1A0E0E;
+    /* Trans pride colors */
+    --trans-blue: #55CDFC;
+    --trans-pink: #F7A8B8;
+    --trans-white: #FFFFFF;
+  }
+ 
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  html { scroll-behavior: smooth; }
+ 
+  body {
+    background: var(--coal);
+    color: var(--text-main);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+ 
+  /* ─── CART SIDEBAR ─── */
+  #cart-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  #cart-overlay.open { opacity: 1; pointer-events: all; }
+  #cart-sidebar {
+    position: fixed; top: 0; right: -420px; width: 420px; max-width: 100vw;
+    height: 100vh; background: var(--warm-black); border-left: 1px solid rgba(212,168,83,0.2);
+    z-index: 1000; transition: right 0.4s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column; padding: 0;
+  }
+  #cart-sidebar.open { right: 0; }
+  .cart-header {
+    padding: 2rem; border-bottom: 1px solid rgba(212,168,83,0.15);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cart-header h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--gold); }
+  .cart-close-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.5rem; padding: 0.25rem; }
+  .cart-close-btn:hover { color: var(--gold); }
+  #cart-items { flex: 1; overflow-y: auto; padding: 1.5rem; }
+  .cart-item {
+    display: flex; gap: 1rem; padding: 1rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .cart-item img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-size: 0.9rem; font-weight: 400; margin-bottom: 0.3rem; }
+  .cart-item-price { color: var(--gold); font-size: 0.95rem; }
+  .cart-item-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 0.2rem; align-self: flex-start; }
+  .cart-item-remove:hover { color: var(--deep-red); }
+  .cart-empty { text-align: center; color: var(--text-muted); padding: 3rem 0; font-style: italic; }
+  .cart-footer { padding: 1.5rem 2rem; border-top: 1px solid rgba(212,168,83,0.15); }
+  .cart-total { display: flex; justify-content: space-between; margin-bottom: 1.5rem; }
+  .cart-total span:first-child { color: var(--text-muted); }
+  .cart-total span:last-child { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold); }
+  .checkout-btn {
+    width: 100%; padding: 1rem; background: var(--gold);
+    color: var(--coal); border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; letter-spacing: 0.15em;
+    text-transform: uppercase; font-weight: 500; transition: all 0.3s;
+  }
+  .checkout-btn:hover { background: var(--gold-light); }
+ 
+  /* ─── NOTIFICATION TOAST ─── */
+  #toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--gold); color: var(--coal); padding: 0.8rem 2rem;
+    border-radius: 30px; font-size: 0.85rem; font-weight: 500; z-index: 2000;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+ 
+  /* ─── NAVIGATION with Trans Hover Effect ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 0 3rem;
+    background: transparent;
+    transition: background 0.4s, backdrop-filter 0.4s;
+  }
+  nav.scrolled {
+    background: rgba(15,8,8,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(212,168,83,0.15);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 80px; max-width: 1400px; margin: 0 auto;
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 900; letter-spacing: -0.02em;
+    color: var(--gold); text-decoration: none;
+    text-shadow: 0 0 40px rgba(212,168,83,0.3);
+  }
+  .nav-logo span { font-style: italic; color: var(--gold-light); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; align-items: center; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase;
+    transition: all 0.3s ease;
+    position: relative;
+    padding-bottom: 4px;
+  }
+  /* Trans pride hover effect - blue, pink, white, pink, blue */
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--trans-blue), var(--trans-pink), var(--trans-white), var(--trans-pink), var(--trans-blue));
+    transition: width 0.3s ease;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-actions { display: flex; gap: 1rem; align-items: center; }
+  .nav-icon-btn {
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; font-size: 1.1rem; padding: 0.4rem;
+    transition: color 0.2s; position: relative;
+  }
+  .nav-icon-btn:hover { color: var(--gold); }
+  .cart-count {
+    position: absolute; top: -4px; right: -4px;
+    width: 16px; height: 16px; background: var(--deep-red);
+    border-radius: 50%; font-size: 10px; display: flex;
+    align-items: center; justify-content: center; color: white; font-weight: 500;
+  }
+  .nav-cta {
+    padding: 0.6rem 1.5rem; background: transparent;
+    border: 1px solid rgba(212,168,83,0.5); color: var(--gold);
+    font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.3s; text-decoration: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-cta:hover { background: var(--gold); color: var(--coal); }
+ 
+  /* Search Bar */
+  .search-container {
+    position: relative;
+  }
+  .search-input {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(212,168,83,0.2);
+    padding: 0.5rem 1rem 0.5rem 2.2rem;
+    border-radius: 30px;
+    color: var(--text-main);
+    font-size: 0.8rem;
+    width: 180px;
+    transition: all 0.3s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--gold);
+    width: 220px;
+    background: rgba(255,255,255,0.12);
+  }
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    pointer-events: none;
+    color: var(--text-muted);
+  }
+ 
+  /* ─── HERO with floating animation up and down ─── */
+  #hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background-image: url('hero.png');
+    background-size: cover; background-position: center top;
+    animation: gentleFloat 6s ease-in-out infinite;
+  }
+  @keyframes gentleFloat {
+    0%, 100% { transform: scale(1.05) translateY(0); }
+    50% { transform: scale(1.05) translateY(-20px); }
+  }
+  .hero-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      105deg,
+      rgba(10,4,4,0.88) 0%,
+      rgba(15,8,8,0.65) 40%,
+      rgba(10,4,4,0.3) 70%,
+      rgba(10,4,4,0.5) 100%
+    );
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 1400px; margin: 0 auto; padding: 0 3rem;
+    width: 100%; padding-top: 120px;
+  }
+  .hero-eyebrow {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
+    opacity: 0; animation: fadeSlideUp 0.8s 0.3s forwards;
+  }
+  .hero-eyebrow span {
+    font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); font-weight: 400;
+  }
+  .hero-eyebrow-line { height: 1px; width: 50px; background: var(--gold); }
+  .hero-tagline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    font-weight: 900; line-height: 0.95;
+    letter-spacing: -0.03em; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeSlideUp 0.9s 0.5s forwards;
+  }
+  .hero-tagline em { font-style: italic; color: var(--gold); }
+  .hero-tagline .outline-text {
+    -webkit-text-stroke: 1.5px rgba(212,168,83,0.6);
+    color: transparent;
+  }
+  .hero-sub {
+    max-width: 480px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem; line-height: 1.7;
+    color: var(--blush); margin-bottom: 3rem;
+    opacity: 0; animation: fadeSlideUp 0.9s 0.7s forwards;
+  }
+  .hero-buttons {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    opacity: 0; animation: fadeSlideUp 0.9s 0.9s forwards;
+  }
+  .btn-primary {
+    padding: 1rem 2.5rem; background: var(--gold);
+    color: var(--coal); border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-block;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-outline {
+    padding: 1rem 2.5rem; background: transparent;
+    color: var(--text-main); border: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; letter-spacing: 0.2em; text-transform: uppercase;
+    transition: all 0.3s; text-decoration: none; display: inline-block;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .hero-scroll-hint {
+    position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeIn 1s 1.5s forwards;
+  }
+  .hero-scroll-hint span { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+  .scroll-line {
+    width: 1px; height: 50px; background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+ 
+  /* ─── MARQUEE STRIP with trans flag colored dot ─── */
+  .marquee-section {
+    padding: 1.2rem 0; background: var(--gold);
+    overflow: hidden; white-space: nowrap;
+  }
+  .marquee-track { display: inline-flex; animation: marqueeScroll 20s linear infinite; }
+  .marquee-item {
+    display: inline-flex; align-items: center; gap: 2rem;
+    padding: 0 2.5rem; color: var(--coal);
+    font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500;
+  }
+  .marquee-dot { width: 4px; height: 4px; background: var(--coal); border-radius: 50%; }
+  /* Trans flag colored dot for inclusive shade range */
+  .marquee-dot.trans-flag {
+    background: linear-gradient(90deg, var(--trans-blue), var(--trans-pink), var(--trans-white), var(--trans-pink), var(--trans-blue));
+    width: 20px;
+    border-radius: 10px;
+  }
+ 
+  /* ─── SECTIONS SHARED ─── */
+  section { padding: 7rem 3rem; }
+  .section-inner { max-width: 1400px; margin: 0 auto; }
+  .section-eyebrow {
+    font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;
+  }
+  .section-eyebrow::before { content: ''; display: block; width: 30px; height: 1px; background: var(--gold); }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 700; line-height: 1.1; letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  .section-title em { font-style: italic; color: var(--gold); }
+ 
+  /* ─── INTERACTIVE PRODUCT SHOWCASE ─── */
+  #showcase { background: var(--ink); }
+  .showcase-grid {
+    display: flex; gap: 4px; height: 520px;
+    border-radius: 4px; overflow: hidden; margin-top: 4rem;
+  }
+  .showcase-panel {
+    position: relative; overflow: hidden; cursor: pointer;
+    flex: 1; transition: flex 0.7s cubic-bezier(0.4,0,0.2,1);
+    min-width: 60px;
+  }
+  .showcase-panel.active { flex: 7; }
+  .showcase-panel img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.4,0,0.2,1);
+    filter: brightness(0.6);
+  }
+  .showcase-panel.active img { filter: brightness(0.75); }
+  .showcase-panel:hover img { transform: scale(1.05); }
+  .showcase-panel-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,4,4,0.9) 0%, transparent 50%);
+  }
+  .showcase-panel-label {
+    position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem;
+    display: flex; align-items: flex-end; gap: 1rem;
+  }
+  .showcase-icon {
+    width: 42px; height: 42px; min-width: 42px;
+    border-radius: 50%; background: rgba(212,168,83,0.15);
+    border: 1px solid rgba(212,168,83,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+  }
+  .showcase-text { overflow: hidden; }
+  .showcase-cat {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.3rem;
+    opacity: 0; transform: translateX(20px);
+    transition: all 0.5s 0.1s;
+  }
+  .showcase-name {
+    font-family: 'Playfair Display', serif; font-size: 1.2rem;
+    opacity: 0; transform: translateX(20px);
+    transition: all 0.5s 0.15s; white-space: nowrap;
+  }
+  .showcase-desc {
+    font-size: 0.82rem; color: var(--blush); margin-top: 0.3rem;
+    opacity: 0; transform: translateX(20px);
+    transition: all 0.5s 0.2s; white-space: nowrap;
+  }
+  .showcase-panel.active .showcase-cat,
+  .showcase-panel.active .showcase-name,
+  .showcase-panel.active .showcase-desc {
+    opacity: 1; transform: translateX(0);
+  }
+ 
+  /* ─── SHOP GRID ─── */
+  #shop { background: var(--warm-black); }
+  .shop-filters {
+    display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 3rem;
+  }
+  .filter-btn {
+    padding: 0.5rem 1.3rem; background: transparent;
+    border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted);
+    font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--gold); color: var(--gold); background: rgba(212,168,83,0.08);
+  }
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2px;
+  }
+  .product-card {
+    background: var(--smoke); position: relative; overflow: hidden;
+    cursor: pointer; transition: transform 0.3s;
+    display: flex; flex-direction: column;
+  }
+  .product-card:hover { z-index: 2; transform: scale(1.02); }
+  .product-img-wrap {
+    position: relative; overflow: hidden;
+    aspect-ratio: 3/4;
+  }
+  .product-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .product-card:hover .product-img-wrap img { transform: scale(1.08); }
+  .product-badge {
+    position: absolute; top: 1rem; left: 1rem;
+    padding: 0.3rem 0.8rem; font-size: 0.65rem; letter-spacing: 0.15em;
+    text-transform: uppercase; font-weight: 500;
+  }
+  .badge-new { background: var(--gold); color: var(--coal); }
+  .badge-sale { background: var(--deep-red); color: white; }
+  .badge-trans { background: linear-gradient(90deg, var(--trans-blue), var(--trans-pink), var(--trans-white)); color: var(--coal); }
+  .product-wishlist {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 36px; height: 36px; background: rgba(10,4,4,0.7);
+    border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: var(--text-muted); transition: all 0.2s;
+    backdrop-filter: blur(4px);
+  }
+  .product-wishlist:hover { background: rgba(10,4,4,0.9); color: var(--deep-red); }
+  .product-wishlist.wished { color: var(--deep-red); }
+  .product-overlay {
+    position: absolute; inset: 0; background: rgba(10,4,4,0.6);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px);
+  }
+  .product-card:hover .product-overlay { opacity: 1; }
+  .quick-add-btn {
+    padding: 0.75rem 1.8rem; background: var(--gold); color: var(--coal);
+    border: none; cursor: pointer; font-size: 0.75rem;
+    letter-spacing: 0.15em; text-transform: uppercase; font-weight: 500;
+    transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .quick-add-btn:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .product-info { padding: 1.2rem; background: var(--smoke); }
+  .product-name {
+    font-family: 'Playfair Display', serif; font-size: 1rem;
+    margin-bottom: 0.3rem; font-weight: 400;
+  }
+  .product-shade { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.7rem; }
+  .product-price-row { display: flex; align-items: center; justify-content: space-between; }
+  .product-price { color: var(--gold); font-size: 1rem; font-weight: 400; }
+  .product-price s { color: var(--text-muted); font-size: 0.85rem; margin-right: 0.5rem; }
+  .product-stars { font-size: 0.75rem; color: var(--gold); letter-spacing: 1px; }
+  .shade-swatches { display: flex; gap: 4px; margin-top: 0.7rem; }
+  .swatch {
+    width: 14px; height: 14px; border-radius: 50%; cursor: pointer;
+    border: 1.5px solid transparent; transition: border-color 0.2s;
+  }
+  .swatch:hover, .swatch.active { border-color: var(--gold); }
+ 
+  /* Product Detail Modal */
+  .product-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  .product-modal.active { display: flex; }
+  .modal-content {
+    max-width: 800px; width: 90%; background: var(--warm-black);
+    border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-img { width: 100%; max-height: 400px; object-fit: cover; }
+  .modal-info { padding: 2rem; }
+  .modal-close {
+    position: absolute; top: 20px; right: 30px;
+    background: none; border: none; color: white; font-size: 2rem;
+    cursor: pointer; z-index: 2001;
+  }
+ 
+  /* ─── BRAND STORY (unchanged) ─── */
+  #story { background: var(--coal); }
+  .story-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+  .story-img-stack { position: relative; }
+  .story-img-main {
+    width: 100%; aspect-ratio: 3/4; object-fit: cover;
+  }
+  .story-img-accent {
+    position: absolute; bottom: -3rem; right: -2rem;
+    width: 55%; aspect-ratio: 1; object-fit: cover;
+    border: 3px solid var(--coal);
+  }
+  .story-stat-pill {
+    position: absolute; top: 2rem; left: -2rem;
+    background: var(--gold); color: var(--coal);
+    padding: 1.2rem 1.8rem;
+  }
+  .story-stat-num {
+    font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 900;
+    display: block; line-height: 1;
+  }
+  .story-stat-label { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 500; }
+  .story-body { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; line-height: 1.8; color: var(--blush); margin-bottom: 1.5rem; }
+  .story-values { display: flex; gap: 2rem; margin-top: 2.5rem; flex-wrap: wrap; }
+  .story-value { display: flex; align-items: center; gap: 0.7rem; font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.08em; }
+  .story-value-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+ 
+  /* ─── PRICING (unchanged) ─── */
+  #pricing { background: var(--ink); }
+  .pricing-toggle-wrap { display: flex; align-items: center; gap: 1rem; margin-bottom: 4rem; }
+  .pricing-toggle-label { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.08em; }
+  .toggle-switch {
+    width: 50px; height: 26px; background: var(--smoke); border-radius: 13px;
+    position: relative; cursor: pointer; border: 1px solid rgba(212,168,83,0.2);
+    transition: background 0.3s;
+  }
+  .toggle-switch.on { background: var(--gold); }
+  .toggle-thumb {
+    position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+    background: white; border-radius: 50%; transition: transform 0.3s;
+  }
+  .toggle-switch.on .toggle-thumb { transform: translateX(24px); }
+  .pricing-save-badge {
+    background: rgba(180,100,200,0.2); border: 1px solid rgba(180,100,200,0.4);
+    color: #d4a0ef; font-size: 0.7rem; padding: 0.3rem 0.8rem; letter-spacing: 0.1em;
+  }
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2px; }
+  .pricing-card {
+    background: var(--smoke); padding: 2.5rem 2rem; position: relative;
+    transition: transform 0.3s;
+  }
+  .pricing-card:hover { transform: translateY(-4px); }
+  .pricing-card.featured {
+    background: var(--gold); color: var(--coal);
+    transform: translateY(-8px);
+  }
+  .pricing-card.featured:hover { transform: translateY(-12px); }
+  .plan-icon { font-size: 2rem; margin-bottom: 1.5rem; display: block; }
+  .plan-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .plan-desc { font-size: 0.82rem; opacity: 0.7; margin-bottom: 2rem; }
+  .plan-price { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 900; line-height: 1; margin-bottom: 0.3rem; }
+  .plan-period { font-size: 0.78rem; opacity: 0.6; margin-bottom: 2rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .plan-features { list-style: none; margin-bottom: 2.5rem; }
+  .plan-features li {
+    display: flex; align-items: center; gap: 0.7rem;
+    font-size: 0.85rem; padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .pricing-card.featured .plan-features li { border-bottom-color: rgba(0,0,0,0.1); }
+  .check-icon { color: var(--gold); font-size: 0.9rem; font-weight: 700; }
+  .pricing-card.featured .check-icon { color: var(--coal); }
+  .x-icon { opacity: 0.35; font-size: 0.9rem; }
+  .plan-btn {
+    width: 100%; padding: 0.9rem; border: 1px solid rgba(212,168,83,0.4);
+    background: transparent; color: var(--gold); cursor: pointer;
+    font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase;
+    transition: all 0.3s; font-family: 'DM Sans', sans-serif;
+  }
+  .plan-btn:hover { background: var(--gold); color: var(--coal); border-color: var(--gold); }
+  .pricing-card.featured .plan-btn {
+    background: var(--coal); color: var(--gold); border-color: var(--coal);
+  }
+  .pricing-card.featured .plan-btn:hover { background: var(--warm-black); }
+  .featured-badge {
+    position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+    background: var(--deep-red); color: white; font-size: 0.65rem;
+    letter-spacing: 0.15em; text-transform: uppercase; padding: 0.3rem 1rem; font-weight: 500;
+  }
+ 
+  /* ─── TESTIMONIALS (unchanged) ─── */
+  #testimonials { background: var(--warm-black); }
+  .testimonial-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+  .testimonial-img-stack { position: relative; height: 460px; }
+  .testimonial-img {
+    position: absolute; border-radius: 4px; overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 70%; aspect-ratio: 3/4; object-fit: cover;
+  }
+  .testimonial-img.active { opacity: 1; z-index: 2; transform: scale(1) rotate(0deg); }
+  .testimonial-img.behind { opacity: 0.45; z-index: 1; }
+  .testimonial-content { padding: 2rem 0; }
+  .testimonial-quote-icon { font-size: 4rem; color: var(--gold); opacity: 0.2; font-family: serif; line-height: 1; margin-bottom: -0.5rem; }
+  .testimonial-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem; line-height: 1.6; font-style: italic;
+    color: var(--blush); margin-bottom: 2rem;
+    transition: opacity 0.4s;
+  }
+  .testimonial-author { transition: opacity 0.4s; }
+  .testimonial-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 0.3rem; }
+  .testimonial-role { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.1em; }
+  .testimonial-nav { display: flex; gap: 0.8rem; margin-top: 2.5rem; }
+  .t-nav-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(212,168,83,0.1); border: 1px solid rgba(212,168,83,0.2);
+    color: var(--gold); cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .t-nav-btn:hover { background: var(--gold); color: var(--coal); }
+  .testimonial-dots { display: flex; gap: 0.5rem; margin-top: 1.5rem; align-items: center; }
+  .t-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(212,168,83,0.3); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .t-dot.active { background: var(--gold); width: 20px; border-radius: 3px; }
+ 
+  /* ─── NEWSLETTER (unchanged) ─── */
+  #newsletter {
+    background: var(--gold); color: var(--coal);
+    padding: 6rem 3rem; text-align: center;
+  }
+  .newsletter-eyebrow { font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 1rem; opacity: 0.6; }
+  .newsletter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 900;
+    letter-spacing: -0.02em; margin-bottom: 1rem; line-height: 1.1;
+  }
+  .newsletter-title em { font-style: italic; }
+  .newsletter-sub { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; opacity: 0.7; margin-bottom: 2.5rem; }
+  .newsletter-form { display: flex; max-width: 480px; margin: 0 auto; gap: 0; }
+  .newsletter-input {
+    flex: 1; padding: 1rem 1.5rem; background: rgba(10,4,4,0.15);
+    border: 1px solid rgba(10,4,4,0.2); border-right: none;
+    color: var(--coal); font-size: 0.9rem; font-family: 'DM Sans', sans-serif;
+    outline: none;
+  }
+  .newsletter-input::placeholder { color: rgba(10,4,4,0.45); }
+  .newsletter-input:focus { background: rgba(10,4,4,0.2); }
+  .newsletter-submit {
+    padding: 1rem 1.8rem; background: var(--coal); color: var(--gold);
+    border: none; cursor: pointer; font-size: 0.78rem;
+    letter-spacing: 0.18em; text-transform: uppercase; font-weight: 500;
+    transition: background 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .newsletter-submit:hover { background: var(--warm-black); }
+  .newsletter-promise { font-size: 0.75rem; opacity: 0.5; margin-top: 1rem; }
+ 
+  /* ─── FOOTER (unchanged) ─── */
+  footer {
+    background: var(--ink); padding: 5rem 3rem 3rem;
+    border-top: 1px solid rgba(212,168,83,0.1);
+  }
+  .footer-inner { max-width: 1400px; margin: 0 auto; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4rem; margin-bottom: 4rem; }
+  .footer-brand {}
+  .footer-logo { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; color: var(--gold); margin-bottom: 1rem; display: block; }
+  .footer-logo em { font-style: italic; }
+  .footer-tagline { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; }
+  .footer-social { display: flex; gap: 0.8rem; }
+  .social-link {
+    width: 36px; height: 36px; border: 1px solid rgba(212,168,83,0.2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .social-link:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,168,83,0.08); }
+  .footer-col h4 { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; font-weight: 500; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 0.7rem; }
+  .footer-col ul li a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+  .footer-col ul li a:hover { color: var(--gold); }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .footer-legal { font-size: 0.75rem; color: var(--text-muted); }
+  .footer-pride { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+  .trans-flag { display: inline-flex; gap: 2px; }
+  .trans-flag span { display: inline-block; width: 14px; height: 8px; }
+ 
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes marqueeScroll {
+    from { transform: translateX(0); } to { transform: translateX(-50%); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.2); }
+  }
+ 
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    nav { padding: 0 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 5rem 1.5rem; }
+    .hero-content { padding: 0 1.5rem; padding-top: 100px; }
+    .story-layout, .testimonial-layout { grid-template-columns: 1fr; gap: 3rem; }
+    .story-img-accent { display: none; }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .showcase-grid { height: 380px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .pricing-card.featured { transform: none; }
+    .testimonial-img-stack { height: 300px; }
+    #cart-sidebar { width: 100vw; }
+    .search-input { width: 140px; }
+    .search-input:focus { width: 160px; }
+  }
+  @media (max-width: 600px) {
+    .hero-tagline { font-size: 3rem; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .footer-bottom { flex-direction: column; text-align: center; }
+    .newsletter-form { flex-direction: column; }
+    .newsletter-input { border-right: 1px solid rgba(10,4,4,0.2); border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ─── CART SIDEBAR ─── -->
+<div id="cart-overlay" onclick="toggleCart()"></div>
+<div id="cart-sidebar">
+  <div class="cart-header">
+    <h3>Your Bag</h3>
+    <button class="cart-close-btn" onclick="toggleCart()">✕</button>
+  </div>
+  <div id="cart-items">
+    <p class="cart-empty">Your bag is empty, darling.</p>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cart-total-amount">£0.00</span>
+    </div>
+    <button class="checkout-btn" onclick="handleCheckout()">Proceed to Checkout</button>
+  </div>
+</div>
+ 
+<!-- ─── TOAST ─── -->
+<div id="toast">Added to bag ✦</div>
+ 
+<nav id="main-nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo"><em>The</em> Dolls</a>
+    <ul class="nav-links">
+      <li><a href="#showcase">Collections</a></li>
+      <li><a href="#shop">Shop</a></li>
+      <li><a href="#story">Our Story</a></li>
+      <li><a href="#pricing">Memberships</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" class="search-input" placeholder="Search products..." oninput="filterProductsBySearch()">
+      </div>
+      <button class="nav-icon-btn" title="Wishlist" onclick="showToast('Wishlist saved ♡')">♡</button>
+      <button class="nav-icon-btn" title="Shopping Bag" onclick="toggleCart()">🛍<span class="cart-count" id="cart-count">0</span></button>
+      <a href="#pricing" class="nav-cta">Join Club</a>
+    </div>
+  </div>
+</nav>
+ 
+<!-- ─── HERO  ─── -->
+<section id="hero">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="hero-eyebrow-line"></div>
+      <span>The Dolls ✦ 2024 Collection</span>
+    </div>
+    <h1 class="hero-tagline">
+      Beauty<br>
+      <em>without</em><br>
+      <span class="outline-text">limits</span>
+    </h1>
+    <p class="hero-sub">
+      Luxury makeup crafted for trans women, non-binary icons, and everyone who refuses to be anything but their most gorgeous self.
+    </p>
+    <div class="hero-buttons">
+      <a href="#shop" class="btn-primary">Shop the Collection</a>
+      <a href="#story" class="btn-outline">Our Story</a>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+ 
+<div class="marquee-section">
+  <div class="marquee-track" id="marquee-track">
+    <span class="marquee-item">✦ Free UK delivery over £50 <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Trans-owned & operated <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Cruelty free & vegan <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Inclusive shade range <span class="marquee-dot trans-flag"></span></span>
+    <span class="marquee-item">Award-winning formulas <span class="marquee-dot"></span></span>
+    <span class="marquee-item">✦ Free UK delivery over £50 <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Trans-owned & operated <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Cruelty free & vegan <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Inclusive shade range <span class="marquee-dot trans-flag"></span></span>
+    <span class="marquee-item">Award-winning formulas <span class="marquee-dot"></span></span>
+  </div>
+</div>
+ 
+<!-- ─── INTERACTIVE SHOWCASE ─── -->
+<section id="showcase">
+  <div class="section-inner">
+    <div class="section-eyebrow">Explore Categories</div>
+    <h2 class="section-title">The <em>Perfect</em> Collection</h2>
+    <div class="showcase-grid" id="showcase-panels"></div>
+  </div>
+</section>
+ 
+<!-- ─── SHOP with view all and product click modal ─── -->
+<section id="shop">
+  <div class="section-inner">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+      <div>
+        <div class="section-eyebrow">Bestsellers</div>
+        <h2 class="section-title">Shop the <em>Edit</em></h2>
+      </div>
+      <a href="#" class="btn-outline" id="view-all-link" style="font-size:0.75rem; padding:0.7rem 1.5rem; letter-spacing:0.15em; text-transform:uppercase; text-decoration:none; color:var(--text-muted); border:1px solid rgba(255,255,255,0.1);">View All Products</a>
+    </div>
+    <div class="shop-filters" id="shop-filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="lips">Lips</button>
+      <button class="filter-btn" data-filter="eyes">Eyes</button>
+      <button class="filter-btn" data-filter="face">Face</button>
+      <button class="filter-btn" data-filter="sets">Sets</button>
+      <button class="filter-btn" data-filter="trans">✦ Trans Picks</button>
+    </div>
+    <div class="shop-grid" id="product-grid"></div>
+  </div>
+</section>
+ 
+<!-- ─── BRAND STORY (unchanged) ─── -->
+<section id="story">
+  <div class="section-inner">
+    <div class="story-layout">
+      <div class="story-img-stack">
+        <div class="story-stat-pill">
+          <span class="story-stat-num">10K+</span>
+          <span class="story-stat-label">Dolls Worldwide</span>
+        </div>
+        <img class="story-img-main" src="https://images.unsplash.com/photo-1621784563286-84f7646ef221?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fHRyYW5zJTIwZ2lybHxlbnwwfHwwfHx8MA%3D%3D" alt="Woman applying lipstick" loading="lazy">
+        <img class="story-img-accent" src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&q=80&auto=format&fit=crop" alt="Makeup brushes" loading="lazy">
+      </div>
+      <div class="story-text">
+        <div class="section-eyebrow">Our Story</div>
+        <h2 class="section-title">Made by us,<br><em>for all of us</em></h2>
+        <p class="story-body">
+          The Dolls was born from a frustration — beauty counters that didn't see us, shades that weren't made for us, and advice that wasn't for us. We changed that.
+        </p>
+        <p class="story-body">
+          Founded by trans women, for everyone who dares to be beautiful on their own terms. Every formula is tested, every shade is inclusive, and every purchase supports LGBTQ+ charities across the UK.
+        </p>
+        <div class="story-values">
+          <div class="story-value"><div class="story-value-dot"></div> 100% Cruelty Free</div>
+          <div class="story-value"><div class="story-value-dot"></div> Vegan Certified</div>
+          <div class="story-value"><div class="story-value-dot"></div> 1% to Charity</div>
+          <div class="story-value"><div class="story-value-dot"></div> Trans Owned</div>
+        </div>
+        <div style="margin-top:2.5rem;">
+          <a href="#" class="btn-primary">Read Our Story</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ─── PRICING / MEMBERSHIPS (unchanged) ─── -->
+<section id="pricing">
+  <div class="section-inner">
+    <div style="text-align:center; margin-bottom:1rem;">
+      <div class="section-eyebrow" style="justify-content:center;">Memberships</div>
+      <h2 class="section-title" style="text-align:center;">Join the <em>Inner Circle</em></h2>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:1rem; margin-bottom:4rem;">
+      <span class="pricing-toggle-label">Monthly</span>
+      <div class="toggle-switch" id="pricing-toggle" onclick="togglePricing()">
+        <div class="toggle-thumb"></div>
+      </div>
+      <span class="pricing-toggle-label">Annual</span>
+      <span class="pricing-save-badge">Save 20%</span>
+    </div>
+    <div class="pricing-grid" id="pricing-grid"></div>
+  </div>
+</section>
+ 
+<!-- ─── TESTIMONIALS (unchanged) ─── -->
+<section id="testimonials">
+  <div class="section-inner">
+    <div class="testimonial-layout">
+      <div class="testimonial-img-stack" id="testimonial-imgs"></div>
+      <div class="testimonial-content">
+        <div class="section-eyebrow">Community Love</div>
+        <h2 class="section-title">The <em>Dolls</em> speak</h2>
+        <div class="testimonial-quote-icon">"</div>
+        <p class="testimonial-quote" id="t-quote"></p>
+        <div class="testimonial-author">
+          <p class="testimonial-name" id="t-name"></p>
+          <p class="testimonial-role" id="t-role"></p>
+        </div>
+        <div class="testimonial-dots" id="t-dots"></div>
+        <div class="testimonial-nav">
+          <button class="t-nav-btn" onclick="prevTestimonial()">←</button>
+          <button class="t-nav-btn" onclick="nextTestimonial()">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ─── NEWSLETTER (unchanged) ─── -->
+<section id="newsletter">
+  <div class="newsletter-eyebrow">Stay in the loop</div>
+  <h2 class="newsletter-title">Be the first to know,<br><em>darling</em></h2>
+  <p class="newsletter-sub">New drops, exclusive offers, and trans community news — delivered to your inbox.</p>
+  <form class="newsletter-form" onsubmit="handleNewsletter(event)">
+    <input class="newsletter-input" type="email" placeholder="your@email.com" required>
+    <button class="newsletter-submit" type="submit">Subscribe</button>
+  </form>
+  <p class="newsletter-promise">No spam. Unsubscribe anytime. We respect your privacy.</p>
+</section>
+ 
+<!-- ─── FOOTER (unchanged) ─── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="footer-logo"><em>The</em> Dolls</span>
+        <p class="footer-tagline">Luxury makeup for trans women, non-binary queens, and everyone who refuses to be ordinary. Made in the UK.</p>
+        <div class="footer-social">
+          <a class="social-link" href="#" title="Instagram">IG</a>
+          <a class="social-link" href="#" title="TikTok">TK</a>
+          <a class="social-link" href="#" title="Pinterest">PI</a>
+          <a class="social-link" href="#" title="YouTube">YT</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#">Lips</a></li>
+          <li><a href="#">Eyes</a></li>
+          <li><a href="#">Face</a></li>
+          <li><a href="#">Sets & Kits</a></li>
+          <li><a href="#">Sale</a></li>
+          <li><a href="#">New In</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="#">Shipping & Returns</a></li>
+          <li><a href="#">Order Tracking</a></li>
+          <li><a href="#">Size Guide</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">Our Story</a></li>
+          <li><a href="#">Sustainability</a></li>
+          <li><a href="#">Trans Community</a></li>
+          <li><a href="#">Press & Media</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Affiliates</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-legal">© 2024 The Dolls Beauty Ltd. All rights reserved. · <a href="#" style="color:var(--text-muted);text-decoration:none;">Privacy</a> · <a href="#" style="color:var(--text-muted);text-decoration:none;">Terms</a></p>
+      <p class="footer-pride">Made with love for the community <span class="trans-flag"><span style="background:#55CDFC;"></span><span style="background:#F7A8B8;"></span><span style="background:#FFFFFF;"></span><span style="background:#F7A8B8;"></span><span style="background:#55CDFC;"></span></span></p>
+    </div>
+  </div>
+</footer>
+ 
+<div id="product-modal" class="product-modal"><span class="modal-close" onclick="closeModal()">×</span><div id="modal-content" class="modal-content"></div></div>
+ 
+<script>
+// ─── DATA (unchanged) ───
+const showcaseCategories = [
+  { name: 'Signature Lips', cat: 'Lip Collection', icon: '💋', desc: 'Bold, long-lasting colour', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=800&q=80' },
+  { name: 'Smoky Eyes', cat: 'Eye Collection', icon: '👁', desc: 'Mesmerising shadow palettes', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&q=80&auto=format&fit=crop' },
+  { name: 'Glow Base', cat: 'Foundation & Skin', icon: '✨', desc: 'Flawless, inclusive coverage', img: 'https://images.unsplash.com/photo-1699726242741-11e3ccc06610?w=500&auto=format&fit=crop&q=60' },
+  { name: 'Sculpt & Glow', cat: 'Contour & Highlight', icon: '🌟', desc: 'Chiselled perfection', img: 'https://images.unsplash.com/photo-1503236823255-94609f598e71?w=400&q=80&auto=format&fit=crop' },
+  { name: 'The Full Doll', cat: 'Complete Sets', icon: '👑', desc: 'Everything you need', img: 'https://images.unsplash.com/photo-1599733594230-6b823276abcc?w=400&q=80&auto=format&fit=crop' },
+];
+ 
+const products = [
+  { id:1, name:'Velvet Lip Lacquer', shade:'Crimson Femme', price:24, category:'lips', badge:'new', img:'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=800&q=80', stars:'★★★★★', swatches:['#8B1A1A','#C0392B','#D4511A','#4A1A3A'], trans:false, desc:'Ultra-soft matte finish, long-wearing hydration.' },
+  { id:2, name:'Smoky Obsidian Palette', shade:'Night Femme', price:48, origPrice:65, category:'eyes', badge:'sale', img:'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&q=80', stars:'★★★★★', swatches:['#1A0E0E','#4A3520','#8B6914','#C4A060'], trans:false, desc:'12 pigmented shades for sultry, dramatic eyes.' },
+  { id:3, name:'Inclusive Foundation', shade:'30 shades', price:38, category:'face', badge:'', img:'https://images.unsplash.com/photo-1699726242741-11e3ccc06610?w=500&auto=format&fit=crop', stars:'★★★★☆', swatches:['#F5E6C8','#D4A574','#8B6346','#4A2E1A'], trans:true, desc:'Lightweight, buildable coverage for every skin tone.' },
+  { id:4, name:'Doll Highlighter', shade:'Golden Hour', price:32, category:'face', badge:'new', img:'https://images.unsplash.com/photo-1503236823255-94609f598e71?w=400&q=80', stars:'★★★★★', swatches:['#D4A853','#E8C97A','#B8860B'], trans:false, desc:'Dewy, radiant glow for any occasion.' },
+  { id:5, name:'Trans Pride Lip Set', shade:'Limited Edition', price:55, category:'sets', badge:'trans', img:'https://images.unsplash.com/photo-1571646034647-52e6ea84b28c?q=80&w=1800&auto=format&fit=crop', stars:'★★★★★', swatches:['#55CDFC','#F7A8B8','#FFFFFF'], trans:true, desc:'Three lip colours celebrating trans beauty.' },
+  { id:6, name:'Contour Stick', shade:'Sculpt Queen', price:28, category:'face', badge:'', img:'https://images.unsplash.com/photo-1599733594230-6b823276abcc?auto=format&fit=crop&w=800&q=80', stars:'★★★★☆', swatches:['#7B4F35','#5C3520','#4A2E1A'], trans:false, desc:'Creamy, blendable contour for chiselled features.' },
+  { id:7, name:'Feline Liner', shade:'Jet Black', price:19, category:'eyes', badge:'', img:'https://images.unsplash.com/photo-1692318535011-09ea0e3a7aac?w=500&auto=format&fit=crop', stars:'★★★★★', swatches:['#0A0A0A','#2C1A2E','#1A1A4A'], trans:false, desc:'Precision liquid liner for the perfect wing.' },
+  { id:8, name:'The Doll Full Kit', shade:'Complete Collection', price:129, origPrice:180, category:'sets', badge:'sale', img:'https://images.unsplash.com/photo-1649950499670-afc8bb4c02d4?w=500&auto=format&fit=crop', stars:'★★★★★', swatches:['#D4A853','#8B1A1A','#1A0E0E','#F5E6C8'], trans:true, desc:'Everything you need in one luxe box.' },
+];
+ 
+const testimonials = [
+  { quote: "The Dolls completely transformed how I feel about makeup. Finally a brand that actually sees trans women as their core customer.", name: "Zara M.", role: "Trans Woman & Beauty Blogger", img: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=80' },
+  { quote: "I've tried every foundation on the market. Nothing compares. The coverage, the formula — it shows.", name: "Lily K.", role: "Make-up Artist", img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80' },
+  { quote: "The smoky eye palette is pure magic. Knowing every purchase supports LGBTQ+ charities makes it even better.", name: "Sophia R.", role: "Drag Performer", img: 'https://images.unsplash.com/photo-1557053910-d9eadeed1c58?w=400&q=80' },
+  { quote: "Ordered the full kit as my first step into fem makeup. The tutorials from The Dolls community made it so easy.", name: "Pepper P.", role: "Trans Woman", img: 'https://images.unsplash.com/photo-1605453302863-85c32f2adc76?w=500&auto=format&fit=crop' },
+];
+ 
+const pricingPlans = [
+  { id:'doll', name:'Doll', icon:'💄', desc:'For the curious newcomer', monthly:9, yearly:86, users:'1 member', recommended:false, features:[{label:'10% off all orders', ok:true},{label:'Birthday gift', ok:true},{label:'Early access drops', ok:false},{label:'Free monthly sample',ok:false},{label:'Community events',ok:false}] },
+  { id:'icon', name:'Icon', icon:'✨', desc:'For regular glamour queens', monthly:19, yearly:182, users:'1 member', recommended:false, features:[{label:'15% off all orders', ok:true},{label:'Birthday gift', ok:true},{label:'Early access drops', ok:true},{label:'Free monthly sample',ok:false},{label:'Community events',ok:false}] },
+  { id:'queen', name:'Queen', icon:'👑', desc:'For the true Doll', monthly:39, yearly:374, users:'1 member', recommended:true, features:[{label:'20% off all orders', ok:true},{label:'Birthday gift', ok:true},{label:'Early access drops', ok:true},{label:'Free monthly sample',ok:true},{label:'Community events',ok:true}] },
+  { id:'house', name:'House', icon:'🏠', desc:'For groups & chosen family', monthly:69, yearly:662, users:'Up to 5 members', recommended:false, features:[{label:'25% off all orders', ok:true},{label:'Birthday gifts', ok:true},{label:'Early access drops', ok:true},{label:'Free monthly samples',ok:true},{label:'Private community events',ok:true}] },
+];
+ 
+// ─── STATE ───
+let cart = [];
+let wishlist = new Set();
+let activeFilter = 'all';
+let pricingAnnual = false;
+let activeTestimonial = 0;
+let testimonialTimer;
+let currentSearchTerm = '';
+ 
+// ─── CART LOGIC (unchanged) ───
+function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('open'); document.getElementById('cart-overlay').classList.toggle('open'); }
+function addToCart(product) { let existing = cart.find(i => i.id === product.id); existing ? existing.qty++ : cart.push({...product, qty:1}); renderCart(); showToast(`${product.name} added ✦`); document.getElementById('cart-count').textContent = cart.reduce((a,i)=>a+i.qty,0); }
+function removeFromCart(id) { cart = cart.filter(i => i.id !== id); renderCart(); document.getElementById('cart-count').textContent = cart.reduce((a,i)=>a+i.qty,0); }
+function renderCart() { let el = document.getElementById('cart-items'); if(!cart.length) { el.innerHTML = '<p class="cart-empty">Your bag is empty, darling.</p>'; document.getElementById('cart-total-amount').textContent = '£0.00'; return; } el.innerHTML = cart.map(i => `<div class="cart-item"><img src="${i.img}"><div class="cart-item-info"><div class="cart-item-name">${i.name}</div><div class="cart-item-price">£${i.price.toFixed(2)} × ${i.qty}</div></div><button class="cart-item-remove" onclick="removeFromCart(${i.id})">✕</button></div>`).join(''); let total = cart.reduce((a,i)=>a+(i.price*i.qty),0); document.getElementById('cart-total-amount').textContent = `£${total.toFixed(2)}`; }
+function handleCheckout() { if(!cart.length) { showToast('Add some items first ✦'); return; } showToast('Redirecting to secure checkout ✦'); setTimeout(()=>toggleCart(), 1000); }
+function showToast(msg) { let t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2500); }
+ 
+// ─── SHOWCASE (unchanged) ───
+function renderShowcase() { let grid = document.getElementById('showcase-panels'); grid.innerHTML = showcaseCategories.map((c,i)=>`<div class="showcase-panel${i===0?' active':''}" onclick="activatePanel(${i})"><img src="${c.img}" alt="${c.name}" loading="lazy"><div class="showcase-panel-overlay"></div><div class="showcase-panel-label"><div class="showcase-icon">${c.icon}</div><div class="showcase-text"><div class="showcase-cat">${c.cat}</div><div class="showcase-name">${c.name}</div><div class="showcase-desc">${c.desc}</div></div></div></div>`).join(''); }
+function activatePanel(idx) { document.querySelectorAll('.showcase-panel').forEach((p,i)=>p.classList.toggle('active', i===idx)); }
+ 
+// ─── PRODUCT MODAL (full product view on click) ───
+function openProductModal(product) { let modal = document.getElementById('product-modal'); let content = document.getElementById('modal-content'); content.innerHTML = `<img class="modal-img" src="${product.img}" alt="${product.name}"><div class="modal-info"><h2 style="font-family:Playfair Display">${product.name}</h2><p class="product-shade">${product.shade}</p><p>${product.desc || 'Luxury formula, vegan & cruelty-free.'}</p><div class="product-price-row"><div class="product-price">£${product.price}</div><div class="product-stars">${product.stars}</div></div><button class="quick-add-btn" style="margin-top:1rem;" onclick="addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')}); closeModal();">Add to Bag</button></div>`; modal.classList.add('active'); }
+function closeModal() { document.getElementById('product-modal').classList.remove('active'); }
+ 
+// ─── PRODUCTS with search and click to open modal ───
+function filterProductsBySearch() { currentSearchTerm = document.getElementById('search-input').value.toLowerCase(); renderProducts(activeFilter); }
+function renderProducts(filter='all') { let filtered = filter==='all' ? products : filter==='trans' ? products.filter(p=>p.trans) : products.filter(p=>p.category===filter); if(currentSearchTerm) filtered = filtered.filter(p=>p.name.toLowerCase().includes(currentSearchTerm) || p.shade.toLowerCase().includes(currentSearchTerm)); let grid = document.getElementById('product-grid'); grid.innerHTML = filtered.map(p=>`<div class="product-card" onclick="openProductModal(${JSON.stringify(p).replace(/"/g, '&quot;')})"><div class="product-img-wrap"><img src="${p.img}" alt="${p.name}" loading="lazy">${p.badge ? `<span class="product-badge badge-${p.badge}">${p.badge==='trans'?'✦ Trans Pick':p.badge==='new'?'New':'Sale'}</span>` : ''}<button class="product-wishlist${wishlist.has(p.id)?' wished':''}" onclick="event.stopPropagation(); toggleWishlist(event,${p.id})">${wishlist.has(p.id)?'♥':'♡'}</button><div class="product-overlay"><button class="quick-add-btn" onclick="event.stopPropagation(); addToCart(${JSON.stringify(p).replace(/"/g, '&quot;')})">Quick Add</button></div></div><div class="product-info"><div class="product-name">${p.name}</div><div class="product-shade">${p.shade}</div><div class="product-price-row"><div class="product-price">${p.origPrice?`<s>£${p.origPrice}</s>`:''}£${p.price}</div><div class="product-stars">${p.stars}</div></div><div class="shade-swatches">${p.swatches.map(s=>`<div class="swatch" style="background:${s}"></div>`).join('')}</div></div></div>`).join(''); }
+function toggleWishlist(e, id) { e.stopPropagation(); wishlist.has(id) ? wishlist.delete(id) : wishlist.add(id); renderProducts(activeFilter); showToast(wishlist.has(id) ? 'Saved to wishlist ♥' : 'Removed from wishlist ♡'); }
+function setupFilters() { document.querySelectorAll('.filter-btn').forEach(btn=>{ btn.addEventListener('click',()=>{ document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); activeFilter = btn.dataset.filter; renderProducts(activeFilter); }); }); document.getElementById('view-all-link').addEventListener('click',(e)=>{ e.preventDefault(); document.querySelector('.filter-btn[data-filter="all"]').click(); window.scrollTo({top:document.getElementById('shop').offsetTop-80, behavior:'smooth'}); }); }
+ 
+// ─── PRICING (unchanged) ───
+function togglePricing() { pricingAnnual = !pricingAnnual; document.getElementById('pricing-toggle').classList.toggle('on', pricingAnnual); renderPricing(); }
+function renderPricing() { let grid = document.getElementById('pricing-grid'); grid.innerHTML = pricingPlans.map(p=>`<div class="pricing-card${p.recommended?' featured':''}">${p.recommended?'<div class="featured-badge">Most Popular</div>':''}<span class="plan-icon">${p.icon}</span><div class="plan-name">${p.name}</div><div class="plan-desc">${p.desc}</div><div class="plan-price">£${pricingAnnual ? Math.round(p.yearly/12) : p.monthly}</div><div class="plan-period">per month${pricingAnnual?' · billed annually':''}</div><ul class="plan-features"><li style="border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:0.5rem;margin-bottom:0.5rem;">✓ ${p.users}</li>${p.features.map(f=>`<li><span class="${f.ok?'check-icon':'x-icon'}">${f.ok?'✓':'✗'}</span>${f.label}</li>`).join('')}</ul><button class="plan-btn" onclick="showToast('${p.name} plan selected ✦')">Get Started</button></div>`).join(''); }
+ 
+// ─── TESTIMONIALS (unchanged) ───
+function renderTestimonials() { let imgStack = document.getElementById('testimonial-imgs'); imgStack.innerHTML = testimonials.map((t,i)=>`<img class="testimonial-img${i===0?' active':' behind'}" id="timg${i}" src="${t.img}" alt="${t.name}" loading="lazy">`).join(''); let dotsEl = document.getElementById('t-dots'); dotsEl.innerHTML = testimonials.map((_,i)=>`<div class="t-dot${i===0?' active':''}" onclick="goTestimonial(${i})"></div>`).join(''); updateTestimonialContent(); }
+function updateTestimonialContent() { let t = testimonials[activeTestimonial]; document.getElementById('t-quote').textContent = t.quote; document.getElementById('t-name').textContent = t.name; document.getElementById('t-role').textContent = t.role; document.querySelectorAll('.testimonial-img').forEach((img,i)=>{ img.className = `testimonial-img${i===activeTestimonial?' active':' behind'}`; }); document.querySelectorAll('.t-dot').forEach((d,i)=>{ d.classList.toggle('active', i===activeTestimonial); }); }
+function goTestimonial(idx) { activeTestimonial = idx; updateTestimonialContent(); resetTestimonialTimer(); }
+function nextTestimonial() { activeTestimonial=(activeTestimonial+1)%testimonials.length; updateTestimonialContent(); resetTestimonialTimer(); }
+function prevTestimonial() { activeTestimonial=(activeTestimonial-1+testimonials.length)%testimonials.length; updateTestimonialContent(); resetTestimonialTimer(); }
+function resetTestimonialTimer() { clearInterval(testimonialTimer); testimonialTimer=setInterval(nextTestimonial, 5500); }
+function handleNewsletter(e) { e.preventDefault(); showToast('Welcome to The Dolls community ✦'); e.target.reset(); }
+window.addEventListener('scroll', ()=>{ document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 60); });
+ 
+// ─── INIT ───
+renderShowcase(); renderProducts(); setupFilters(); renderPricing(); renderTestimonials(); testimonialTimer = setInterval(nextTestimonial, 5500);
+</script>
+</body>
+</html>
